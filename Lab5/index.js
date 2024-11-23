@@ -2,7 +2,7 @@ import Module from "./Module.js";
 import PathParameters from "./PathParameters.js";
 import QueryParameters from "./QueryParameters.js";
 import WorkingWithArrays from "./WorkingWithArrays.js";
-import WorkingWithObjects from "./WorkingwithObjects.js";
+import WorkingWithObjects from "./WorkingWithObjects.js";
 
 export default function Lab5(app) {
     app.get("/lab5/welcome", (req, res) => {
