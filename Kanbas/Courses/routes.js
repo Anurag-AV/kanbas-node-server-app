@@ -4,7 +4,13 @@ import * as assignmentDao from "../Assignments/dao.js";
 import * as enrollmentsDao from "../Enrollments/dao.js";
 
 export default function CourseRoutes(app) {
-    
+  const findUsersForCourse = async (req, res) => {
+    const { cid } = req.params;
+    const users = await enrollmentsDao.findUsersForCourse(cid);
+    res.json(users);
+  };
+  app.get("/api/courses/:cid/users", findUsersForCourse);
+
   app.post("/api/courses/:courseId/modules", async (req, res) => {
     const { courseId } = req.params;
     const module = {
@@ -14,13 +20,13 @@ export default function CourseRoutes(app) {
     const newModule = await modulesDao.createModule(module);
     res.send(newModule);
   });
-  app.post("/api/courses/:courseId/assignments", (req, res) => {
+  app.post("/api/courses/:courseId/assignments", async (req, res) => {
     const { courseId } = req.params;
     const assignment = {
       ...req.body,
       course: courseId,
     };
-    const newAssignment = assignmentDao.createAssignment(assignment);
+    const newAssignment = await assignmentDao.createAssignment(assignment);
     res.send(newAssignment);
   });
 
@@ -31,8 +37,16 @@ export default function CourseRoutes(app) {
  
   app.delete("/api/courses/:courseId", async (req, res) => {
     const { courseId } = req.params;
-    const status = await dao.deleteCourse(courseId);
-    res.send(status);
+    try{
+      const removal = await enrollmentsDao.removeAllEnrollments(courseId);
+      const status = await dao.deleteCourse(courseId);
+      res.send(status);
+    }
+    catch(e){
+      console.log(e)
+      res.status(500).json({ message: "Unable to unenroll users or delete course" });
+    }
+   
   });
  
   app.put("/api/courses/:courseId", async (req, res) => {
@@ -48,9 +62,9 @@ export default function CourseRoutes(app) {
     res.json(modules);
   });
  
-  app.get("/api/courses/:courseId/assignments", (req, res) => {
+  app.get("/api/courses/:courseId/assignments", async (req, res) => {
     const { courseId } = req.params;
-    const assignments = assignmentDao.findAssignmentsForCourse(courseId);
+    const assignments = await assignmentDao.findAssignmentsForCourse(courseId);
     res.json(assignments);
   });
   app.post("/api/courses", async (req, res) => {
